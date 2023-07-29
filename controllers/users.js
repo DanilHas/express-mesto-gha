@@ -1,22 +1,26 @@
 const User = require('../models/user');
 
-const getUsers = (req, res) => User.find()
-  .then((users) => res.status(200).send(users))
-  .catch(() => res.status(500).send({ message: 'Ошибка на сервере' }));
+const getUsers = (req, res) =>
+  User.find()
+    .then((users) => res.status(200).send(users))
+    .catch(() => res.status(500).send({ message: 'Ошибка на сервере' }));
 
 const getCurrentUser = (req, res) => {
   const { userId } = req.params;
-
-  return User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        return res
-          .status(404)
-          .send({ message: 'Запрашиваемый пользователь не найден' });
-      }
-      return res.status(200).send(user);
-    })
-    .catch(() => res.status(500).send({ message: 'Ошибка на сервере' }));
+  if (userId.length === 24) {
+    return User.findById(userId)
+      .then((user) => {
+        if (!user) {
+          return res
+            .status(404)
+            .send({ message: 'Запрашиваемый пользователь не найден' });
+        }
+        return res.status(200).send(user);
+      })
+      .catch(() => res.status(500).send({ message: 'Ошибка на сервере' }));
+  } else {
+    return res.status(400).send({ message: 'Передан некорректный id' });
+  }
 };
 
 const createUser = (req, res) => {
@@ -31,9 +35,9 @@ const createUser = (req, res) => {
             .map((error) => error.message)
             .join(', ')}`,
         });
+      } else {
+        return res.status(500).send({ message: 'Ошибка на сервере' });
       }
-
-      return res.status(500).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -41,54 +45,62 @@ const updateProfile = (req, res) => {
   const userId = req.user._id;
   const { name, about } = req.body;
 
-  return User.findByIdAndUpdate(
-    userId,
-    { name, about },
-    {
-      new: true,
-      runValidators: true,
-      upsert: true,
-    },
-  )
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(', ')}`,
-        });
+  if (userId.length === 24) {
+    return User.findByIdAndUpdate(
+      userId,
+      { name, about },
+      {
+        new: true,
+        runValidators: true,
+        upsert: true,
       }
-
-      return res.status(500).send({ message: 'Ошибка на сервере' });
-    });
+    )
+      .then((user) => res.status(200).send(user))
+      .catch((err) => {
+        if (err.name === 'ValidationError') {
+          return res.status(400).send({
+            message: `${Object.values(err.errors)
+              .map((error) => error.message)
+              .join(', ')}`,
+          });
+        } else {
+          return res.status(500).send({ message: 'Ошибка на сервере' });
+        }
+      });
+  } else {
+    return res.status(400).send({ message: 'Передан некорректный id' });
+  }
 };
 
 const updateAvatar = (req, res) => {
   const userId = req.user._id;
   const { avatar } = req.body;
 
-  User.findByIdAndUpdate(
-    userId,
-    { avatar },
-    {
-      new: true,
-      runValidators: true,
-      upsert: true,
-    },
-  )
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(', ')}`,
-        });
+  if (userId.length === 24) {
+    User.findByIdAndUpdate(
+      userId,
+      { avatar },
+      {
+        new: true,
+        runValidators: true,
+        upsert: true,
       }
-
-      return res.status(500).send({ message: 'Ошибка на сервере' });
-    });
+    )
+      .then((user) => res.status(200).send(user))
+      .catch((err) => {
+        if (err.name === 'ValidationError') {
+          return res.status(400).send({
+            message: `${Object.values(err.errors)
+              .map((error) => error.message)
+              .join(', ')}`,
+          });
+        } else {
+          return res.status(500).send({ message: 'Ошибка на сервере' });
+        }
+      });
+  } else {
+    return res.status(400).send({ message: 'Передан некорректный id' });
+  }
 };
 
 module.exports = {

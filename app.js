@@ -2,11 +2,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const router = require('./routes');
-require('dotenv').config();
 
-const { PORT, MONGODB_URL } = process.env;
+const { PORT = 3000 } = process.env;
 
-mongoose.connect(MONGODB_URL);
+mongoose.connect('mongodb://localhost:27017/mestodb');
 
 const app = express();
 
