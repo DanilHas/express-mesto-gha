@@ -7,6 +7,7 @@ const getUsers = (req, res) =>
 
 const getCurrentUser = (req, res) => {
   const { userId } = req.params;
+
   if (userId.length === 24) {
     return User.findById(userId)
       .then((user) => {
@@ -94,6 +95,10 @@ const updateAvatar = (req, res) => {
               .map((error) => error.message)
               .join(', ')}`,
           });
+        } else if (err.name === 'CastError') {
+          return res.status(400).send({
+            message: 'Переданы некорректные данные'
+          })
         } else {
           return res.status(500).send({ message: 'Ошибка на сервере' });
         }
