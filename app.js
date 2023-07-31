@@ -1,14 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const helmet = require('helmet');
 const router = require('./routes');
 
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, MongoURL = 'mongodb://localhost:27017/mestodb' } = process.env;
 
-mongoose.connect('mongodb://localhost:27017/mestodb');
+mongoose.connect(MongoURL);
 
 const app = express();
 
+app.use(helmet());
 app.use(bodyParser.json());
 app.use((req, res, next) => {
   req.user = {
@@ -20,4 +22,6 @@ app.use((req, res, next) => {
 
 app.use(router);
 
-app.listen(PORT);
+app.listen(PORT, () => {
+  console.log(`App listening on port ${PORT}`);
+});
