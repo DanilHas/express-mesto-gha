@@ -1,6 +1,5 @@
 const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
-const BadRequestError = require('../errors/bad-request-err');
 
 const getUsers = (req, res, next) =>
   User.find()
@@ -30,15 +29,7 @@ const updateProfile = (req, res, next) => {
     },
   )
     .then((user) => res.status(200).send(user))
-    .catch((err) =>
-      next(
-        new BadRequestError(
-          `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(', ')}`,
-        ),
-      ),
-    );
+    .catch(next);
 };
 
 const updateAvatar = (req, res, next) => {
@@ -55,15 +46,7 @@ const updateAvatar = (req, res, next) => {
     },
   )
     .then((user) => res.status(200).send(user))
-    .catch((err) =>
-      next(
-        new BadRequestError(
-          `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(', ')}`,
-        ),
-      ),
-    );
+    .catch(next);
 };
 
 const getUserInfo = (req, res, next) => {

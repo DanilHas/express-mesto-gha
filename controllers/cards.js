@@ -1,5 +1,4 @@
 const Card = require('../models/card');
-const BadRequestError = require('../errors/bad-request-err');
 const NotFoundError = require('../errors/not-found-err');
 const ForbiddenError = require('../errors/forbidden-err');
 
@@ -15,15 +14,7 @@ const createCard = (req, res, next) => {
 
   Card.create({ name, link, owner: ownerId })
     .then((card) => res.status(201).send(card))
-    .catch((err) =>
-      next(
-        new BadRequestError(
-          `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(', ')}`,
-        ),
-      ),
-    );
+    .catch(next);
 };
 
 const deleteCard = (req, res, next) => {
@@ -35,7 +26,7 @@ const deleteCard = (req, res, next) => {
       if (!card.owner.equals(req.user._id)) {
         throw new ForbiddenError('Нет прав для совершения данного действия');
       } else {
-        return Card.findByIdAndRemove(cardId);
+        return Card.deleteOne(card);
       }
     })
     .then(() => res.status(200).send({ message: 'Карточка удалена' }))

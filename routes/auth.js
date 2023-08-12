@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const { createUser, login } = require('../controllers/auth');
+const { regexToCheckUrl } = require('../utils/constants');
 
 router.post(
   '/signin',
@@ -23,9 +24,7 @@ router.post(
         .default(
           'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
         )
-        .regex(
-          /(?:https?):\/\/(\w+:?\w*)?(\S+)(:\d+)?(\/|\/([\w#!:.?+=&%!\-/]))?/,
-        ),
+        .regex(regexToCheckUrl),
       email: Joi.string().email().required(),
       password: Joi.string().required(),
     }),

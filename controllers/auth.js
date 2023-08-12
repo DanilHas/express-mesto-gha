@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const BadRequestError = require('../errors/bad-request-err');
 const ConflictError = require('../errors/conflict-err');
 
 const { JWT_KEY = 'SECRET_KEY' } = process.env;
@@ -19,13 +18,7 @@ const createUser = (req, res, next) => {
       if (err.name === 'MongoServerError' && err.code === 11000) {
         next(new ConflictError('Пользователь с таким email уже существует'));
       } else {
-        next(
-          new BadRequestError(
-            `${Object.values(err.errors)
-              .map((error) => error.message)
-              .join(', ')}`,
-          ),
-        );
+        next(err);
       }
     });
 };

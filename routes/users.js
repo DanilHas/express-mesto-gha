@@ -7,6 +7,7 @@ const {
   updateAvatar,
   getUserInfo,
 } = require('../controllers/users');
+const { regexToCheckUrl } = require('../utils/constants');
 
 router.get('/', getUsers);
 
@@ -31,9 +32,7 @@ router.patch(
         .default(
           'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
         )
-        .regex(
-          /(?:https?):\/\/(\w+:?\w*)?(\S+)(:\d+)?(\/|\/([\w#!:.?+=&%!\-/]))?/,
-        ),
+        .regex(regexToCheckUrl),
     }),
   }),
   updateAvatar,
@@ -43,7 +42,7 @@ router.get(
   '/:userId',
   celebrate({
     params: Joi.object().keys({
-      userId: Joi.string().alphanum().length(24),
+      userId: Joi.string().length(24).hex().required(),
     }),
   }),
   getCurrentUser,
