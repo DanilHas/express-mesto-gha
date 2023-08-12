@@ -12,7 +12,9 @@ const createUser = (req, res, next) => {
   bcrypt
     .hash(password, 10)
     .then((hash) => User.create({ name, about, avatar, email, password: hash }))
-    .then((user) => res.status(201).send(user))
+    .then((user) =>
+      res.status(201).send({ name, about, avatar, email, _id: user._id }),
+    )
     .catch((err) => {
       if (err.name === 'MongoServerError' && err.code === 11000) {
         next(new ConflictError('Пользователь с таким email уже существует'));
@@ -41,7 +43,13 @@ const login = (req, res, next) => {
           httpOnly: true,
           sameSite: true,
         })
-        .end();
+        .send({
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+          email,
+          _id: user._id,
+        });
     })
     .catch(next);
 };
