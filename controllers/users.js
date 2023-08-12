@@ -1,118 +1,84 @@
 const User = require('../models/user');
+const NotFoundError = require('../errors/not-found-err');
+const BadRequestError = require('../errors/bad-request-err');
 
-const getUsers = (req, res) => User.find()
-  .then((users) => res.status(200).send(users))
-  .catch(() => res.status(500).send({ message: 'Ошибка на сервере' }));
+const getUsers = (req, res, next) =>
+  User.find()
+    .then((users) => res.status(200).send(users))
+    .catch(next);
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   const { userId } = req.params;
 
-  if (userId.length === 24) {
-    User.findById(userId)
-      .orFail(new Error('NotValidUserId'))
-      .then((user) => res.status(200).send(user))
-      .catch((err) => {
-        if (err.message === 'NotValidUserId') {
-          res
-            .status(404)
-            .send({ message: 'Запрашиваемый пользователь не найден' });
-        } else {
-          res.status(500).send({ message: 'Ошибка на сервере' });
-        }
-      });
-  } else {
-    res.status(400).send({ message: 'Передан некорректный id' });
-  }
+  User.findById(userId)
+    .orFail(new NotFoundError('Запрашиваемый пользователь не найден'))
+    .then((user) => res.status(200).send(user))
+    .catch(next);
 };
 
-const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-
-  return User.create({ name, about, avatar })
-    .then((user) => res.status(201).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(', ')}`,
-        });
-      } else {
-        res.status(500).send({ message: 'Ошибка на сервере' });
-      }
-    });
-};
-
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   const userId = req.user._id;
   const { name, about } = req.body;
 
-  if (userId.length === 24) {
-    User.findByIdAndUpdate(
-      userId,
-      { name, about },
-      {
-        new: true,
-        runValidators: true,
-        upsert: true,
-      },
-    )
-      .then((user) => res.status(200).send(user))
-      .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(400).send({
-            message: `${Object.values(err.errors)
-              .map((error) => error.message)
-              .join(', ')}`,
-          });
-        } else {
-          res.status(500).send({ message: 'Ошибка на сервере' });
-        }
-      });
-  } else {
-    res.status(400).send({ message: 'Передан некорректный id' });
-  }
+  User.findByIdAndUpdate(
+    userId,
+    { name, about },
+    {
+      new: true,
+      runValidators: true,
+      upsert: true,
+    },
+  )
+    .then((user) => res.status(200).send(user))
+    .catch((err) =>
+      next(
+        new BadRequestError(
+          `${Object.values(err.errors)
+            .map((error) => error.message)
+            .join(', ')}`,
+        ),
+      ),
+    );
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const userId = req.user._id;
   const { avatar } = req.body;
 
-  if (userId.length === 24) {
-    User.findByIdAndUpdate(
-      userId,
-      { avatar },
-      {
-        new: true,
-        runValidators: true,
-        upsert: true,
-      },
-    )
-      .then((user) => res.status(200).send(user))
-      .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(400).send({
-            message: `${Object.values(err.errors)
-              .map((error) => error.message)
-              .join(', ')}`,
-          });
-        } else if (err.name === 'CastError') {
-          res.status(400).send({
-            message: 'Переданы некорректные данные',
-          });
-        } else {
-          res.status(500).send({ message: 'Ошибка на сервере' });
-        }
-      });
-  } else {
-    res.status(400).send({ message: 'Передан некорректный id' });
-  }
+  User.findByIdAndUpdate(
+    userId,
+    { avatar },
+    {
+      new: true,
+      runValidators: true,
+      upsert: true,
+    },
+  )
+    .then((user) => res.status(200).send(user))
+    .catch((err) =>
+      next(
+        new BadRequestError(
+          `${Object.values(err.errors)
+            .map((error) => error.message)
+            .join(', ')}`,
+        ),
+      ),
+    );
+};
+
+const getUserInfo = (req, res, next) => {
+  const userId = req.user._id;
+
+  User.findById(userId)
+    .orFail(new NotFoundError('Запрашиваемый пользователь не найден'))
+    .then((user) => res.status(200).send(user))
+    .catch(next);
 };
 
 module.exports = {
   getUsers,
   getCurrentUser,
-  createUser,
   updateProfile,
   updateAvatar,
+  getUserInfo,
 };

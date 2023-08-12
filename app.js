@@ -1,24 +1,21 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 const router = require('./routes');
 
-const { PORT = 3000, MongoURL = 'mongodb://localhost:27017/mestodb' } = process.env;
+const { PORT = 3000, MONGO_DB = 'mongodb://localhost:27017/mestodb' } =
+  process.env;
 
-mongoose.connect(MongoURL);
+mongoose.connect(MONGO_DB);
 
 const app = express();
 
 app.use(helmet());
 app.use(bodyParser.json());
-app.use((req, res, next) => {
-  req.user = {
-    _id: '64c64f2e97c0840704c41a4a',
-  };
-
-  next();
-});
+app.use(cookieParser());
 
 app.use(router);
 
